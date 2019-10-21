@@ -7,5 +7,6 @@ Rails.application.routes.draw do
   mount Resque::Server, at: '/admin/jobs'
 
   resources :short_urls, only: [:index, :create, :show]
-  get '/top-100' => to: 'short_urls#top_one_hundred'
+  get '/', to: 'short_urls#top_one_hundred'
+  get '/:url', to: 'short_urls#load_url'
 end
