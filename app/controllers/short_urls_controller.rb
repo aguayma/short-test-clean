@@ -1,7 +1,9 @@
 class ShortUrlsController < ApplicationController
+  require 'uri'
 
   # Since we're working on an API, we don't have authenticity tokens
   skip_before_action :verify_authenticity_token
+  before_action :set_url, only: [:load_url]
 
   def index
   end
@@ -14,19 +16,23 @@ class ShortUrlsController < ApplicationController
 
   def load_url
     @url.clicks.create
-    redirect_to @url.url
+    redirect_to @url.add_http_if_needed
   end
 
   def top_one_hundred
-    top_one_hundred = Click.select(:short_url_id).group(:short_url_id).order("count(short_url_id) desc").first(100)
+    urls_with_click_counts = []
+    top_one_hundred = ShortUrl.left_joins(:clicks).group(:id).order('COUNT(clicks.id) DESC').limit(100)
+    top_one_hundred.each do |url|
+      urls_with_click_counts.push({url: url, click: url.clicks.count})
+    end
     render json: {
-      urls: top_one_hundred,
+      urls: urls_with_click_counts,
     }, status: :ok and return
   end
 
   private
   def set_url
-    @url = ShortUrl.find(params[:short_url])
+    @url = ShortUrl.find_by(code: params[:code])
   end
 
 end

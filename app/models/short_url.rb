@@ -3,11 +3,18 @@ class ShortUrl < ApplicationRecord
   CHARACTERS = [*'0'..'9', *'a'..'z', *'A'..'Z'].freeze
 
   validate :validate_full_url, :on => :create
+  has_many :clicks
 
   def short_code
   end
 
   def update_title!
+  end
+
+  def add_http_if_needed
+    if !url.match(/^((http|https):\/\/)/)
+      "http://" + url
+    end
   end
 
   private
