@@ -5,7 +5,15 @@ class ShortUrl < ApplicationRecord
   validate :validate_full_url, :on => :create
   has_many :clicks
 
-  def short_code
+  def short_code(id = self.id, base = 62)
+    return CHARACTERS[0] if id == 0
+    result = ""
+      while id > 0
+        r = id % base
+        result.prepend(CHARACTERS[r])
+        id = (id / base).floor
+      end
+    result
   end
 
   def update_title!
