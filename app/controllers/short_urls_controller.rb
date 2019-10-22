@@ -9,6 +9,13 @@ class ShortUrlsController < ApplicationController
   end
 
   def create
+    @short_url = ShortUrl.new(short_url_params)
+    if @short_url.save
+      Resque.enqueue(CapturePageTitle, @short_url.id)
+    end
+    render json: {
+      short_url: ShortUrl.all,
+    }, status: :ok and return
   end
 
   def show
@@ -33,6 +40,10 @@ class ShortUrlsController < ApplicationController
   private
   def set_url
     @url = ShortUrl.find_by(code: params[:code])
+  end
+
+  def short_url_params
+    params.permit(:id, :url)
   end
 
 end
