@@ -4,9 +4,9 @@ class ShortUrl < ApplicationRecord
 
   validate :validate_full_url, :on => :create
   has_many :clicks
-  after_create :short_code
+  after_create :create_short_code
 
-  def short_code(id = self.id, base = 62)
+  def create_short_code(id = self.id, base = 62)
     return CHARACTERS[0] if id == 0
     result = ""
       while id > 0
@@ -14,25 +14,30 @@ class ShortUrl < ApplicationRecord
         result.prepend(CHARACTERS[r])
         id = (id / base).floor
       end
-    self.code = result
+    self.short_code = result
     self.save
   end
 
   def update_title!
+    title = Nokogiri::HTML.parse(open(full_url)).title
+    self.update(title: title)
   end
 
   def add_http_if_needed
-    if !url.match(/^((http|https):\/\/)/)
-      "http://" + url
+    if !full_url.match(/^((http|https):\/\/)/)
+      "http://" + full_url
+    else
+      full_url
     end
   end
 
   private
 
   def validate_full_url
-    if !!url.match(URL_VALIDATION)
-    else
-      errors.add(:url, 'is not a valid url.')
+    if full_url.nil?
+      errors.add(:full_url, "can't be blank")
+    elsif !!!full_url.match(URL_VALIDATION)
+      errors.add(:full_url, "is not a valid url")
     end
   end
 

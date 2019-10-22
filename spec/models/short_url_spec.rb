@@ -44,7 +44,7 @@ RSpec.describe ShortUrl, type: :model do
     end
 
     it "has a click_counter" do
-      expect(short_url.click_count).to eq 0
+      expect(short_url.clicks.count).to eq 0
     end
 
     it "fetches the title" do
