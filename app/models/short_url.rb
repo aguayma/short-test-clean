@@ -4,6 +4,7 @@ class ShortUrl < ApplicationRecord
 
   validate :validate_full_url, :on => :create
   has_many :clicks
+  after_create :short_code
 
   def short_code(id = self.id, base = 62)
     return CHARACTERS[0] if id == 0
@@ -13,7 +14,8 @@ class ShortUrl < ApplicationRecord
         result.prepend(CHARACTERS[r])
         id = (id / base).floor
       end
-    result
+    self.code = result
+    self.save
   end
 
   def update_title!
