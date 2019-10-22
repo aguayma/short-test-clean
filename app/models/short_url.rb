@@ -4,8 +4,11 @@ class ShortUrl < ApplicationRecord
 
   validate :validate_full_url, :on => :create
   has_many :clicks
-  after_create :create_short_code
+  after_save :create_short_code
 
+  # There are 62 unique characters in the CHARACTERS array which gives us base62 for encoding
+  # by using the objects ID we can get a unique code and save it to the short_code field
+  # since we are using the after_save callback we are just updating the column directly
   def create_short_code(id = self.id, base = 62)
     return CHARACTERS[0] if id == 0
     result = ""
@@ -14,15 +17,17 @@ class ShortUrl < ApplicationRecord
         result.prepend(CHARACTERS[r])
         id = (id / base).floor
       end
-    self.short_code = result
-    self.save
+    self.update_column(:short_code, result)
   end
 
+  # functonality can be called on a model object and it will update the title in real time
   def update_title!
     title = Nokogiri::HTML.parse(open(full_url)).title
     self.update(title: title)
   end
 
+  # this is to allow url's such as 'google.com' to actually be redirected to
+  # if the http/s is already in the url we just return the full_url
   def add_http_if_needed
     if !full_url.match(/^((http|https):\/\/)/)
       "http://" + full_url

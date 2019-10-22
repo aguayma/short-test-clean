@@ -27,3 +27,15 @@
 # Checking your short URL redirect
 
     curl -I localhost:3000/abc
+
+
+# Base62 Logic Shortest URL Logic
+
+    I noticed that in the ShortUrl model that there was an array with 62 characters so
+    I used base62 to factor in a unique short code. For the uniqueness I used the
+    ShortUrl object.id, which would allow me to create unique codes that are not being used.
+
+    However, this doesn't account for the possibility of there being deleted records.
+    If I had more time, I would of wanted to create a separe function that used ShortUrl.count
+    and taking into account the first object being created, then going through and ensuring that
+    the created short_code does not already exist in the db. 

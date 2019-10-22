@@ -5,6 +5,9 @@ class ShortUrlsController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :set_url, only: [:show]
 
+  # We are using a Clicks table to count how many times a site is visited using the shortcode
+  # this is to prevent multiple users from hitting the same url and potentially
+  # not being counted as an actual click
   def index
     urls_with_click_counts = []
     top_one_hundred = ShortUrl.left_joins(:clicks).group(:id).order('COUNT(clicks.id) DESC').limit(100)
@@ -19,6 +22,7 @@ class ShortUrlsController < ApplicationController
   def create
     @short_url = ShortUrl.new(short_url_params)
     if @short_url.save
+      # starting the title capture job after the object is saved
       Resque.enqueue(CapturePageTitle, @short_url.id)
       render json: {
         short_code: @short_url.short_code
@@ -30,6 +34,7 @@ class ShortUrlsController < ApplicationController
 
   def show
     if @url
+      # Adding a Click object to the table with the parent of the ShortUrl
       @url.clicks.create
       redirect_to @url.add_http_if_needed
     else

@@ -57,13 +57,16 @@ RSpec.describe ShortUrl, type: :model do
       # Instead of creating a bunch of ShortUrls to get a higher
       # id, let's just manipulate the one we have.
 
+      # using the update_column callback will skip validations.
+      # replaced with update instead to have object go through and update the short_code
+
       it "has the short_code for id 1001" do
-        short_url.update_column(:id, 1001)
+        short_url.update(id: 1001)
         expect(short_url.short_code).to eq("g9")
       end
 
       it "has the short_code for id for 50" do
-        short_url.update_column(:id, 50)
+        short_url.update(id: 50)
         expect(short_url.short_code).to eq("O")
       end
     end
